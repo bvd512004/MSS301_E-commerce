@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sơ đồ kiến trúc BookMart</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      margin: 30px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Sơ đồ kiến trúc hệ thống BookMart</h1>
+    
+    <div class="mermaid">
+flowchart TB
+    client[Khách hàng / Nhân viên]
+
+    subgraph edge [Điểm vào]
+        gateway[API Gateway<br/>cổng 8080]
+    end
+
+    subgraph platform [Nền tảng Spring Cloud]
+        eureka[Service Discovery<br/>Eureka Server<br/>cổng 8761]
+    end
+
+    subgraph services [Microservices]
+        userSvc[user-service<br/>cổng 8081]
+        productSvc[product-service<br/>cổng 8082]
+        orderSvc[order-service<br/>cổng 8083]
+    end
+
+    client --> gateway
+    gateway --> userSvc
+    gateway --> productSvc
+    gateway --> orderSvc
+
+    userSvc -. đăng ký và tra cứu .-> eureka
+    productSvc -. đăng ký và tra cứu .-> eureka
+    orderSvc -. đăng ký và tra cứu .-> eureka
+    gateway -. tra cứu địa chỉ service .-> eureka
+
+    orderSvc -. REST: kiểm tra khách hàng .-> userSvc
+    orderSvc -. REST: lấy giá và tồn kho .-> productSvc
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({ 
+      startOnLoad: true, 
+      theme: 'default',
+      flowchart: { 
+        useMaxWidth: true,
+        padding: 20
+      }
+    });
+    mermaid.contentLoaded();
+  </script>
+</body>
+</html>
