@@ -14,7 +14,7 @@ Ba miền nghiệp vụ:
 
 Khách hàng đăng ký tài khoản, xem sách và đặt mua. Nhân viên quản lý sách, giá, tồn kho và trạng thái đơn. Thanh toán trực tuyến, vận chuyển, đánh giá sách và khuyến mãi nằm ngoài phạm vi.
 
-Giai đoạn hiện tại hoàn thành phân tích bài toán, sơ đồ kiến trúc và skeleton project. API nghiệp vụ, đăng ký Eureka, định tuyến Gateway và Docker làm ở các giai đoạn sau.
+Giai đoạn 2 đã có API REST, Eureka, Gateway và lời gọi giữa các service khi chạy local. Docker để giai đoạn 3. Hướng dẫn chạy nằm trong [MSS301_Project_E-comerce/README.md](MSS301_Project_E-comerce/README.md). Luồng request: [MSS301_Project_E-comerce/docs/luong-request.md](MSS301_Project_E-comerce/docs/luong-request.md).
 
 ## Thành viên nhóm
 

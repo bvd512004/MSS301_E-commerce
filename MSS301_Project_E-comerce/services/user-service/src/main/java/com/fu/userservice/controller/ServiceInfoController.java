@@ -13,7 +13,7 @@ public class ServiceInfoController {
         return Map.of(
                 "service", "user-service",
                 "role", "Quan ly tai khoan va ho so khach hang",
-                "status", "skeleton"
+                "status", "running"
         );
     }
 
