@@ -1,12 +1,12 @@
 # BookMart — MSS301 E-commerce
 
-Hệ thống bán sách trực tuyến theo kiến trúc microservices, dùng Spring Boot và Spring Cloud. Giai đoạn 2 chạy local qua Eureka và API Gateway. Docker để giai đoạn 3.
+Hệ thống bán sách trực tuyến theo kiến trúc microservices, dùng Spring Boot, Spring Cloud, Docker và Docker Compose.
 
 ## Mục tiêu project
 
 Xây một hệ thống gồm Service Discovery, API Gateway và ba microservices, chạy độc lập rồi giao tiếp qua REST. Bài toán cụ thể là **BookMart**: khách hàng có tài khoản, cửa hàng quản lý sách, khách đặt và theo dõi đơn hàng.
 
-Giai đoạn 2 đã có API REST cho ba service, Eureka, Gateway định tuyến, và `order-service` gọi hai service kia khi tạo hoặc hủy đơn. Docker để giai đoạn 3.
+Hệ thống có API REST cho ba service, Eureka, Gateway định tuyến, `order-service` gọi hai service kia khi tạo hoặc hủy đơn, và chạy được bằng `docker-compose up`.
 
 ## Thành viên nhóm
 
@@ -19,7 +19,7 @@ Chi tiết phân công nằm ở [docs/phan-cong-nhom.docx](docs/phan-cong-nhom.
 
 ## Kiến trúc tổng quát
 
-Client chỉ đi qua API Gateway. Gateway chuyển request tới đúng service. Eureka là Service Discovery: các service đăng ký địa chỉ tại đây để Gateway và các service tìm nhau. `order-service` gọi `user-service` và `product-service` bằng REST khi tạo đơn.
+Client chỉ đi qua API Gateway. Gateway chuyển request tới đúng service. Eureka là Service Discovery: các service đăng ký địa chỉ tại đây để Gateway và các service tìm nhau. `order-service` gọi `user-service` và `product-service` bằng REST khi tạo đơn. Mỗi service ghi dữ liệu vào database MySQL riêng.
 
 | Thành phần | Thư mục | Cổng |
 | --- | --- | --- |
@@ -28,6 +28,7 @@ Client chỉ đi qua API Gateway. Gateway chuyển request tới đúng service.
 | user-service | `/services/user-service` | 8081 |
 | product-service | `/services/product-service` | 8082 |
 | order-service | `/services/order-service` | 8083 |
+| MySQL | `/mysql` | 3306 |
 
 ```mermaid
 flowchart TB
@@ -41,9 +42,12 @@ flowchart TB
     orderSvc -. đăng ký .-> eureka
     orderSvc -. REST: kiểm tra khách hàng .-> userSvc
     orderSvc -. REST: giá và tồn kho .-> productSvc
+    userSvc --> userDb[(bookmart_user)]
+    productSvc --> productDb[(bookmart_product)]
+    orderSvc --> orderDb[(bookmart_order)]
 ```
 
-Sơ đồ đầy đủ: [docs/architecture-diagram.html](docs/architecture-diagram.html), [docs/so-do-kien-truc.docx](docs/so-do-kien-truc.docx). Luồng request giai đoạn 2: [docs/luong-request.md](docs/luong-request.md).
+Sơ đồ đầy đủ: [docs/architecture-diagram.html](docs/architecture-diagram.html), [docs/so-do-kien-truc.docx](docs/so-do-kien-truc.docx). Luồng request: [docs/luong-request.md](docs/luong-request.md). Docker: [docs/huong-dan-docker.md](docs/huong-dan-docker.md).
 
 ## Tài liệu
 
@@ -51,26 +55,31 @@ Sơ đồ đầy đủ: [docs/architecture-diagram.html](docs/architecture-diagr
 - [So sánh Monolithic và Microservices](docs/so-sanh-monolithic-va-microservices.docx)
 - [Sơ đồ kiến trúc](docs/so-do-kien-truc.docx)
 - [Phân công nhóm](docs/phan-cong-nhom.docx)
-- [Luồng request giai đoạn 2](docs/luong-request.md)
+- [Luồng request](docs/luong-request.md)
+- [Hướng dẫn build và chạy Docker](docs/huong-dan-docker.md)
 
 ## Cấu trúc thư mục
 
 ```text
 /docs
 /discovery-server
+  Dockerfile
 /api-gateway
+  Dockerfile
 /services
-  /user-service
-  /product-service
-  /order-service
+  /user-service/Dockerfile
+  /product-service/Dockerfile
+  /order-service/Dockerfile
+/mysql
+docker-compose.yml
 README.md
 ```
 
-Mỗi thư mục là một project Spring Boot riêng, build bằng Maven, Java 21. Ba service có controller, service, repository và một database SQL Server riêng.
+Mỗi thư mục service là một project Spring Boot riêng, build bằng Maven, Java 21. Ba service có controller, service, repository và một database MySQL riêng.
 
 ## Cơ sở dữ liệu
 
-SQL Server Express trên máy này, instance `localhost\DUCBACH`, cổng 1433. Mỗi service một database, không dùng chung bảng.
+MySQL 8, cổng 3306. Mỗi service một database, không dùng chung bảng.
 
 | Service | Database |
 | --- | --- |
@@ -78,23 +87,25 @@ SQL Server Express trên máy này, instance `localhost\DUCBACH`, cổng 1433. M
 | product-service | `bookmart_product` |
 | order-service | `bookmart_order` |
 
-Đăng nhập trong SSMS: server `localhost\DUCBACH`, login `bookmart`, mật khẩu `BookMart@2026`. Hibernate tự tạo bảng khi service khởi động (`ddl-auto=update`). Cột chữ dùng `nvarchar` để giữ tiếng Việt. Cấu hình nằm trong `application.properties` của từng service.
+User: `bookmart`, mật khẩu `BookMart@2026`. Hibernate tự tạo bảng khi service khởi động (`ddl-auto=update`). Bộ mã `utf8mb4` để giữ tiếng Việt.
 
-## Hướng dẫn chạy local
+Khi chạy Docker, Compose tạo sẵn ba database từ `mysql/init.sql`. Khi chạy local, có thể bật mỗi MySQL: `docker-compose up mysql -d`.
 
-Cần Java 21. Trong thư mục project có Maven Wrapper, không cần cài Maven riêng. Mở năm terminal, đứng tại `MSS301_Project_E-comerce`, chạy theo thứ tự Eureka trước:
+## Chạy hệ thống bằng docker-compose
+
+Cần Docker Desktop. Đứng tại thư mục `MSS301_Project_E-comerce`:
 
 ```text
-.\mvnw.cmd -f discovery-server\pom.xml spring-boot:run
-.\mvnw.cmd -f services\user-service\pom.xml spring-boot:run
-.\mvnw.cmd -f services\product-service\pom.xml spring-boot:run
-.\mvnw.cmd -f services\order-service\pom.xml spring-boot:run
-.\mvnw.cmd -f api-gateway\pom.xml spring-boot:run
+docker-compose up --build
 ```
 
-Đợi vài giây cho các service hiện trên Eureka: http://localhost:8761
+Một lệnh này build image, tạo network, chạy MySQL, Eureka, ba microservices và API Gateway. Lần đầu mất vài phút vì Maven tải dependency trong Dockerfile.
 
-Client gọi qua Gateway cổng 8080. Ba service vẫn mở cổng riêng để chạy độc lập: 8081, 8082, 8083.
+Eureka: http://localhost:8761  
+Client gọi qua Gateway: http://localhost:8080  
+Swagger UI (gọi API qua Gateway, không cần Postman): http://localhost:8080/swagger-ui.html  
+
+Trong Swagger chọn `user-service` / `product-service` / `order-service` ở dropdown, bấm **Try it out**.
 
 Dữ liệu mẫu sau khi khởi động:
 
@@ -117,5 +128,21 @@ curl.exe http://localhost:8080/api/products
 curl.exe "http://localhost:8080/api/orders?userId=1"
 curl.exe -X PATCH http://localhost:8080/api/orders/1/status -H "Content-Type: application/json" -d "{\"status\":\"CONFIRMED\"}"
 ```
+
+Chi tiết build, log, dừng container: [docs/huong-dan-docker.md](docs/huong-dan-docker.md).
+
+## Hướng dẫn chạy local (không Docker hóa app)
+
+Cần Java 21 và MySQL (hoặc `docker-compose up mysql -d`). Mở năm terminal, đứng tại `MSS301_Project_E-comerce`, chạy Eureka trước:
+
+```text
+.\mvnw.cmd -f discovery-server\pom.xml spring-boot:run
+.\mvnw.cmd -f services\user-service\pom.xml spring-boot:run
+.\mvnw.cmd -f services\product-service\pom.xml spring-boot:run
+.\mvnw.cmd -f services\order-service\pom.xml spring-boot:run
+.\mvnw.cmd -f api-gateway\pom.xml spring-boot:run
+```
+
+Đợi các service hiện trên Eureka: http://localhost:8761
 
 Khi tạo đơn, tồn kho giảm. Hủy đơn (`CANCELLED`) thì tồn kho được cộng lại. Chi tiết từng bước nằm ở [docs/luong-request.md](docs/luong-request.md).

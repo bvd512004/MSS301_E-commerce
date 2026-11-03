@@ -13,7 +13,7 @@ Discovery Server chạy cổng 8761 và không tự đăng ký. Ba microservice 
 | product-service | 8082 | `product-service` |
 | order-service | 8083 | `order-service` |
 
-Mỗi service có một database SQL Server riêng trên instance `localhost\DUCBACH`, cổng 1433: `bookmart_user`, `bookmart_product`, `bookmart_order`. Không có database dùng chung.
+Mỗi service có một database MySQL riêng: `bookmart_user`, `bookmart_product`, `bookmart_order`. Không có database dùng chung. Khi chạy Docker, cả ba database nằm trong container `mysql` trên network `bookmart-net`. Khi chạy local, MySQL lắng nghe `localhost:3306`.
 
 ## Route của API Gateway
 

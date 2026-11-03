@@ -52,6 +52,12 @@ flowchart TB
         orderSvc[order-service<br/>cổng 8083]
     end
 
+    subgraph data [MySQL]
+        userDb[(bookmart_user)]
+        productDb[(bookmart_product)]
+        orderDb[(bookmart_order)]
+    end
+
     client --> gateway
     gateway --> userSvc
     gateway --> productSvc
@@ -64,6 +70,9 @@ flowchart TB
 
     orderSvc -. REST: kiểm tra khách hàng .-> userSvc
     orderSvc -. REST: lấy giá và tồn kho .-> productSvc
+    userSvc --> userDb
+    productSvc --> productDb
+    orderSvc --> orderDb
     </div>
   </div>
 

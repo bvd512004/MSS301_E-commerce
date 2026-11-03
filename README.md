@@ -14,7 +14,7 @@ Ba miền nghiệp vụ:
 
 Khách hàng đăng ký tài khoản, xem sách và đặt mua. Nhân viên quản lý sách, giá, tồn kho và trạng thái đơn. Thanh toán trực tuyến, vận chuyển, đánh giá sách và khuyến mãi nằm ngoài phạm vi.
 
-Giai đoạn 2 đã có API REST, Eureka, Gateway và lời gọi giữa các service khi chạy local. Docker để giai đoạn 3. Hướng dẫn chạy nằm trong [MSS301_Project_E-comerce/README.md](MSS301_Project_E-comerce/README.md). Luồng request: [MSS301_Project_E-comerce/docs/luong-request.md](MSS301_Project_E-comerce/docs/luong-request.md).
+Hệ thống có API REST, Eureka, Gateway, lời gọi REST giữa các service, MySQL riêng cho từng service, và chạy bằng Docker Compose. Hướng dẫn: [MSS301_Project_E-comerce/README.md](MSS301_Project_E-comerce/README.md). Docker: [MSS301_Project_E-comerce/docs/huong-dan-docker.md](MSS301_Project_E-comerce/docs/huong-dan-docker.md).
 
 ## Thành viên nhóm
 
@@ -51,4 +51,14 @@ flowchart TB
     orderSvc -. REST: giá và tồn kho .-> productSvc
 ```
 
-Sơ đồ và giải thích luồng request: [MSS301_Project_E-comerce/docs/architecture-diagram.html](MSS301_Project_E-comerce/docs/architecture-diagram.html), [MSS301_Project_E-comerce/docs/so-do-kien-truc.docx](MSS301_Project_E-comerce/docs/so-do-kien-truc.docx).
+Sơ đồ và luồng request: [MSS301_Project_E-comerce/docs/architecture-diagram.html](MSS301_Project_E-comerce/docs/architecture-diagram.html), [MSS301_Project_E-comerce/docs/so-do-kien-truc.docx](MSS301_Project_E-comerce/docs/so-do-kien-truc.docx).
+
+## Chạy bằng docker-compose
+
+Cần Docker Desktop. Trong thư mục `MSS301_Project_E-comerce`:
+
+```text
+docker-compose up --build
+```
+
+Gateway: http://localhost:8080 — Eureka: http://localhost:8761 — Swagger: http://localhost:8080/swagger-ui.html. Chi tiết: [MSS301_Project_E-comerce/docs/huong-dan-docker.md](MSS301_Project_E-comerce/docs/huong-dan-docker.md).

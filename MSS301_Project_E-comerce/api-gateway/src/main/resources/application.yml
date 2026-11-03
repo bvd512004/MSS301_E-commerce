@@ -6,6 +6,24 @@ spring:
       server:
         webmvc:
           routes:
+            - id: user-api-docs
+              uri: lb://user-service
+              predicates:
+                - Path=/v3/api-docs/user-service
+              filters:
+                - RewritePath=/v3/api-docs/user-service,/v3/api-docs
+            - id: product-api-docs
+              uri: lb://product-service
+              predicates:
+                - Path=/v3/api-docs/product-service
+              filters:
+                - RewritePath=/v3/api-docs/product-service,/v3/api-docs
+            - id: order-api-docs
+              uri: lb://order-service
+              predicates:
+                - Path=/v3/api-docs/order-service
+              filters:
+                - RewritePath=/v3/api-docs/order-service,/v3/api-docs
             - id: user-service
               uri: lb://user-service
               predicates:
@@ -25,7 +43,20 @@ server:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
     registry-fetch-interval-seconds: 5
   instance:
     prefer-ip-address: true
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    disable-swagger-default-url: true
+    urls-primary-name: user-service
+    urls:
+      - name: user-service
+        url: /v3/api-docs/user-service
+      - name: product-service
+        url: /v3/api-docs/product-service
+      - name: order-service
+        url: /v3/api-docs/order-service
